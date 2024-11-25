@@ -3,8 +3,16 @@
 import React, { useEffect } from "react";
 import { useState, useRef } from "react";
 
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionActions from '@mui/material/AccordionActions';
+import IconButton from "@mui/material/IconButton";
+import DeleteIcon from "@mui/icons-material/Delete";
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { TextField } from "@mui/material";
 
-const DraggableContainer = ({ children, boundaries }) => {
+const DraggableContainer = ({ children, boundaries, deleteFunc, container }) => {
     
     const [position, setPosition] = useState({x:100,y:100});
     const [isDragging, setIsDragging] = useState(false);
@@ -79,7 +87,7 @@ const DraggableContainer = ({ children, boundaries }) => {
     return (
         <div
         ref={currObject}
-        className="bg-gray-500"
+        onMouseDown={handleMouseDown}
         style={{
             position: 'absolute',
             left: position.x,
@@ -87,10 +95,37 @@ const DraggableContainer = ({ children, boundaries }) => {
             cursor: isDragging ? 'grabbing' : 'grab',
             userSelect: 'none'
         }}
-            onMouseDown={handleMouseDown}
         >
-            {children}
+
+
+        <Accordion
+            className="bg-gray-100 flex flex-col">
+            <AccordionSummary
+            expandIcon={<ArrowDownwardIcon/>}
+            aria-controls="panel1-content"
+            id="1"
+            >
+                {container.name}
+            </AccordionSummary>
+            <AccordionDetails
+            className="bg-gray-300">
+                <div className="flex flex-col">
+                        {children}
+                        {container.text.map( (label, idx) => {
+                            console.log(label);
+                            return <TextField size="small" className="my-1" key={idx} label={label}></TextField>
+                        })}
+                </div>
+
+            </AccordionDetails>
+                <AccordionActions className="bg-gray-300">
+                <IconButton onClick={deleteFunc} aria-label="delete" color="error">
+                    <p>Delete</p><DeleteIcon/>
+                    </IconButton>
+                </AccordionActions>
+        </Accordion>
         </div>
+    
     )
 
 
