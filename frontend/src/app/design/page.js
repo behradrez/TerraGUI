@@ -1,5 +1,6 @@
 'use client'
 
+import ListResources from "../../queries/ListResources";
 import Navbar from "../components/navbar";
 import { SpeedDialComponent } from "../components/speedDial";
 import DraggableContainer from "./drag_component";
@@ -12,6 +13,8 @@ export default function Design() {
   const [containers, setContainers] = useState([]);
   const [containerID, setContainerID] = useState(0);
 
+  const {data: availableResources, isLoading, isError} = ListResources();
+
   useEffect(()=>{
     const updateBoundaries = () => {
       setTimeout(()=>{
@@ -23,12 +26,10 @@ export default function Design() {
             bottom: designRect.bottom,
             left:designRect.left
           });
-        }else{
-          console.log("still null");
         }
       },100);
-      }
-
+    }
+  
     updateBoundaries();
     console.log(boundaries);
     window.addEventListener("resize",updateBoundaries);
@@ -46,6 +47,14 @@ export default function Design() {
     let newContainers = containers.filter( (container) => container.id !== id );
     setContainers(newContainers);
   }
+
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+  if (isError) {
+    return <div>Error loading resources</div>
+  }
+
 
   return (
     <>
@@ -72,8 +81,9 @@ export default function Design() {
           key={container.id}
           deleteFunc={()=>deleteContainer(container.id)} 
           boundaries={boundaries}
-          container={container}>
-            <h2>Container number {index + 1}!</h2>
+          container={container}
+          availableResources={availableResources.data}
+          >
           </DraggableContainer>
         ))}
       </div>

@@ -3,17 +3,19 @@
 import React, { useEffect } from "react";
 import { useState, useRef } from "react";
 
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import AccordionActions from '@mui/material/AccordionActions';
-import IconButton from "@mui/material/IconButton";
+import {
+    Accordion, AccordionSummary, AccordionDetails, 
+    AccordionActions, IconButton, TextField
+} from "@mui/material"
+
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import { TextField } from "@mui/material";
+import ListResources from "../components/resourceLister";
 
-const DraggableContainer = ({ children, boundaries, deleteFunc, container }) => {
+const DraggableContainer = ({ children, boundaries, deleteFunc, container, availableResources }) => {
     
+    // Dragging logic
+
     const [position, setPosition] = useState({x:100,y:100});
     const [isDragging, setIsDragging] = useState(false);
     const [dimensions, setDimensions] = useState({width:100, height:100});
@@ -23,15 +25,14 @@ const DraggableContainer = ({ children, boundaries, deleteFunc, container }) => 
     const dragOffset = useRef({x:0, y:0});
     const currObject = useRef(null);
 
-    
     // keep draggable elements approximately in same area on frame resize
     // ( i am personally proud of this one );
-    useEffect(() =>{
+    useEffect(() => {
         setPosition(
             {x:(boundaries.right - dimensions.width - boundaries.left)*xPosPercent+boundaries.left, 
             y:(boundaries.bottom - 2*dimensions.height - boundaries.top)*yPosPercent + boundaries.top
         });
-    },[boundaries]);
+    }, [boundaries]);
 
     // Dragging logic
     useEffect(() => {
@@ -69,12 +70,12 @@ const DraggableContainer = ({ children, boundaries, deleteFunc, container }) => 
             window.addEventListener("mousemove",handleMouseMoveGlobal);
             window.addEventListener("mouseup",handleMouseUpGlobal);
         }
-        return () =>{
+        return () => {
             window.removeEventListener("mousemove",handleMouseMoveGlobal);
             window.removeEventListener("mouseup",handleMouseUpGlobal)
         };
 
-    },[isDragging]);
+    }, [isDragging]);
 
     const handleMouseDown = (e) => {
         setIsDragging(true);
@@ -82,6 +83,21 @@ const DraggableContainer = ({ children, boundaries, deleteFunc, container }) => 
             x: e.clientX - position.x ,
             y: e.clientY - position.y
         };
+    };
+
+    
+    // Resource management logic
+
+    const [resourceType, setResourceType] = useState("");
+    const [requiredFields, setRequiredFields] = useState([]);
+
+    const handleResourceTypeChange = (e) => {
+        setResourceType(e.target.value);
+        for(let i=0; i<availableResources.length; i++){
+            if(availableResources[i].resource_name == e.target.value){
+                setRequiredFields(availableResources[i].required_fields);
+            }
+        }
     };
 
     return (
@@ -97,38 +113,35 @@ const DraggableContainer = ({ children, boundaries, deleteFunc, container }) => 
         }}
         >
 
-
-        <Accordion
-            className="bg-gray-100 flex flex-col">
+        <Accordion className="bg-gray-100 flex flex-col">
             <AccordionSummary
             expandIcon={<ArrowDownwardIcon/>}
             aria-controls="panel1-content"
             id="1"
             >
-                {container.name}
+                {resourceType === "" ? "New Resource" : resourceType}
             </AccordionSummary>
-            <AccordionDetails
-            className="bg-gray-300">
-                <div className="flex flex-col">
-                        {children}
-                        {container.text.map( (label, idx) => {
-                            console.log(label);
+            <AccordionDetails className="bg-gray-300">
+            <div className="flex flex-col">
+
+                <ListResources resourceType={resourceType} setResourceFunc={handleResourceTypeChange} availableResources={availableResources} />
+                {resourceType !== "New Resource" && (
+                    <>
+                        {requiredFields.map((label, idx) => {
                             return <TextField size="small" className="my-1" key={idx} label={label}></TextField>
                         })}
+                    </>
+                    )}
                 </div>
-
             </AccordionDetails>
-                <AccordionActions className="bg-gray-300">
+            <AccordionActions className="bg-gray-300">
                 <IconButton onClick={deleteFunc} aria-label="delete" color="error">
                     <p>Delete</p><DeleteIcon/>
-                    </IconButton>
-                </AccordionActions>
+                </IconButton>
+            </AccordionActions>
         </Accordion>
         </div>
-    
     )
-
-
 };
 
 export default DraggableContainer;
