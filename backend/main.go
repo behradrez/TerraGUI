@@ -4,16 +4,24 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"project/middleware"
 	"project/routes"
+	"project/services"
 )
 
 func main() {
-	port := 8080
+	err := services.LoadResources("supported_resources.json")
+	if err != nil {
+		log.Fatalf("Failed to load resources: %v", err)
+	}
+
 	r := routes.SetupRoutes()
 
-	fmt.Printf("Server is running on http://localhost:%d\n", port)
+	corsRouter := middleware.EnableCORS(r)
 
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), r); err != nil {
+	fmt.Printf("Server is running on http://localhost:8080\n")
+
+	if err := http.ListenAndServe(":8080", corsRouter); err != nil {
 		log.Fatal(err)
 	}
 }

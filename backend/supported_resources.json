@@ -1,0 +1,12 @@
+{
+    "resources":[
+        {
+            "resource_name": "aws_instance",
+            "required_fields": ["ami","instance_type"]
+        },
+        {
+            "resource_name": "aws_s3_bucket",
+            "required_fields":["bucket","acl"]
+        }
+    ]
+}
