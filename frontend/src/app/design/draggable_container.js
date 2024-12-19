@@ -12,7 +12,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ListResources from "../components/resourceLister";
 
-const DraggableContainer = ({ children, boundaries, deleteFunc, container, availableResources }) => {
+const DraggableContainer = ({ deleteFunc, availableResources, containerRef }) => {
     
     // Dragging logic
 
@@ -25,6 +25,19 @@ const DraggableContainer = ({ children, boundaries, deleteFunc, container, avail
     const dragOffset = useRef({x:0, y:0});
     const currObject = useRef(null);
 
+    const [boundaries, setBoundaries] = useState({left:0, top:0, right:0, bottom:0});
+    useEffect(() => {
+        if (containerRef.current) {
+          const rect = containerRef.current.getBoundingClientRect();
+          setBoundaries({
+            left: rect.left,
+            top: rect.top,
+            right: rect.right,
+            bottom: rect.bottom
+          });
+        }
+      }, [containerRef]);
+
     // keep draggable elements approximately in same area on frame resize
     // ( i am personally proud of this one );
     useEffect(() => {
@@ -36,21 +49,19 @@ const DraggableContainer = ({ children, boundaries, deleteFunc, container, avail
 
     // Dragging logic
     useEffect(() => {
-        if(currObject.current){
-            let width = currObject.current.getBoundingClientRect().width;
-            let height = currObject.current.getBoundingClientRect().height;
-            setDimensions({width, height});
-        };
-
         const handleMouseMoveGlobal = (e) => {
             if (isDragging) {
+                const containerWidth = boundaries.right - boundaries.left;
+                const containerHeight = boundaries.bottom - boundaries.top;        
+
                 let newX = e.clientX - dragOffset.current.x;
                 let newY = e.clientY - dragOffset.current.y;
-                newX = Math.max(boundaries.left , Math.min(newX, boundaries.right - dimensions.width));
-                newY = Math.max(boundaries.top - 0.5*dimensions.height , Math.min(newY,boundaries.bottom - 1.5*dimensions.height));
+
+                newX = Math.max(0, Math.min(newX, containerWidth - dimensions.width));
+                newY = Math.max(0, Math.min(newY,containerHeight - dimensions.height));
                 
-                let xLimits = boundaries.right - dimensions.width - boundaries.left;
-                let yLimits = boundaries.bottom - 2*dimensions.height - boundaries.top;
+                let xLimits = boundaries.right - boundaries.left;
+                let yLimits = boundaries.bottom  - boundaries.top;
                 
                 let relativeXPos = (newX - boundaries.left)/xLimits;
                 let relativeYPos = (newY - boundaries.top)/yLimits;
@@ -84,8 +95,14 @@ const DraggableContainer = ({ children, boundaries, deleteFunc, container, avail
             y: e.clientY - position.y
         };
     };
-
-    
+    const recalcDimensions = () => {
+    setTimeout(() => {
+        if (currObject.current) {
+            const rect = currObject.current.getBoundingClientRect();
+            setDimensions({ width: rect.width, height: rect.height });
+        }
+        },300); 
+    };
     // Resource management logic
 
     const [resourceType, setResourceType] = useState("");
@@ -113,7 +130,10 @@ const DraggableContainer = ({ children, boundaries, deleteFunc, container, avail
         }}
         >
 
-        <Accordion className="bg-gray-100 flex flex-col">
+        <Accordion 
+        className="bg-gray-100 flex flex-col"
+        onChange={recalcDimensions}
+        >
             <AccordionSummary
             expandIcon={<ArrowDownwardIcon/>}
             aria-controls="panel1-content"
@@ -123,7 +143,6 @@ const DraggableContainer = ({ children, boundaries, deleteFunc, container, avail
             </AccordionSummary>
             <AccordionDetails className="bg-gray-300">
             <div className="flex flex-col">
-
                 <ListResources resourceType={resourceType} setResourceFunc={handleResourceTypeChange} availableResources={availableResources} />
                 {resourceType !== "New Resource" && (
                     <>

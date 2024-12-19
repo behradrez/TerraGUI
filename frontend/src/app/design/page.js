@@ -1,9 +1,9 @@
 'use client'
 
 import ListResources from "../../queries/ListResources";
-import Navbar from "../components/navbar";
+import Header from "../components/header";
 import { SpeedDialComponent } from "../components/speedDial";
-import DraggableContainer from "./drag_component";
+import DraggableContainer from "./draggable_container";
 import { useState, useRef, useEffect } from "react";
 
 
@@ -58,37 +58,36 @@ export default function Design() {
 
   return (
     <>
-      <Navbar/>
-      <div 
-      className="flex align-middle justify-center relative"
-      style={{
-        position:'relative',
-        width:'100%',
-        height:'100vh'
-      }}
-      >
+      <Header/>
 
-      <div
-        ref={containerRef}
-        className="relative w-full h-3/5 m-4 bg-white flex flex-col-reverse"
-      >
-        <div className="absolute bottom-0 right-0 m-4">
-          <SpeedDialComponent className="max-w-12 w-12" addComponentFunc={addContainer}/>
+      <div 
+    className="relative flex items-center justify-center w-full h-screen bg-gradient-to-br from-[#F7F4FA] to-white font-nunito text-[#2D2D2D]"
+  >
+    
+    <div
+      ref={containerRef}
+      className="overflow-hidden relative w-full h-[60vh] m-4 bg-gray-400 flex flex-col-reverse rounded-lg shadow p-4 max-w-5xl"
+    >
+      <div className="absolute bottom-0 right-0 m-4">
+        <SpeedDialComponent 
+          className="max-w-12 w-12"
+          addComponentFunc={addContainer}
+        />
+      </div>
+    {containers.map((container, index) => (
+      <DraggableContainer
+        key={container.id}
+        deleteFunc={() => deleteContainer(container.id)}
+        boundaries={boundaries}
+        container={container}
+        availableResources={availableResources.data}
+        containerRef={containerRef}
+      />
+    ))}
         </div>
-      </div>
-        {containers.map((container,index) => (
-          <DraggableContainer 
-          key={container.id}
-          deleteFunc={()=>deleteContainer(container.id)} 
-          boundaries={boundaries}
-          container={container}
-          availableResources={availableResources.data}
-          >
-          </DraggableContainer>
-        ))}
-      </div>
-      
-    </>
+
+  </div>
+</>
   );
 
 }
