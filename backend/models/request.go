@@ -7,6 +7,6 @@ type TerraformRequest struct {
 }
 
 type GenerateFileRequest struct {
-	Provider  string                      `json:"provider"`
-	Resources map[string]TerraformRequest `json:"resources"`
+	Provider  string             `json:"provider"`
+	Resources []TerraformRequest `json:"resources"`
 }

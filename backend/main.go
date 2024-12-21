@@ -17,7 +17,9 @@ func main() {
 
 	r := routes.SetupRoutes()
 
-	corsRouter := middleware.EnableCORS(r)
+	loggedRouter := middleware.ReuqestLogger(r)
+
+	corsRouter := middleware.EnableCORS(loggedRouter)
 
 	fmt.Printf("Server is running on http://localhost:8080\n")
 
