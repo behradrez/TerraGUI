@@ -1,4 +1,4 @@
-import {Box,SpeedDial, SpeedDialIcon, SpeedDialAction} from "@mui/material"
+import {SpeedDial, SpeedDialIcon, SpeedDialAction} from "@mui/material"
 import { Save, Add } from "@mui/icons-material"
 
 
@@ -9,14 +9,11 @@ export const SpeedDialComponent = ({addComponentFunc, generateFileFunc}) => {
         { icon: <Save/>, name: "Generate File", action: generateFileFunc },
     ];
 
-    return (
-            
+    return (  
         <SpeedDial
-        
         icon={<SpeedDialIcon/>}
         ariaLabel="speedDial"
         >
-        
             {actions.map( (action)=> (
                 <SpeedDialAction
                 key={action.name}

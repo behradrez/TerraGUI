@@ -12,7 +12,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ListResources from "../components/resourceLister";
 
-const DraggableContainer = ({ deleteFunc, availableResources, containerRef }) => {
+const DraggableContainer = ({ deleteFunc, availableResources, container, designPageRef }) => {
     
     // Dragging logic
 
@@ -27,8 +27,8 @@ const DraggableContainer = ({ deleteFunc, availableResources, containerRef }) =>
 
     const [boundaries, setBoundaries] = useState({left:0, top:0, right:0, bottom:0});
     useEffect(() => {
-        if (containerRef.current) {
-          const rect = containerRef.current.getBoundingClientRect();
+        if (designPageRef.current) {
+          const rect = designPageRef.current.getBoundingClientRect();
           setBoundaries({
             left: rect.left,
             top: rect.top,
@@ -36,7 +36,7 @@ const DraggableContainer = ({ deleteFunc, availableResources, containerRef }) =>
             bottom: rect.bottom
           });
         }
-      }, [containerRef]);
+      }, [designPageRef]);
 
     // keep draggable elements approximately in same area on frame resize
     // ( i am personally proud of this one );
@@ -96,26 +96,46 @@ const DraggableContainer = ({ deleteFunc, availableResources, containerRef }) =>
         };
     };
     const recalcDimensions = () => {
-    setTimeout(() => {
-        if (currObject.current) {
-            const rect = currObject.current.getBoundingClientRect();
-            setDimensions({ width: rect.width, height: rect.height });
-        }
-        },300); 
+        setTimeout(() => {
+            if (currObject.current) {
+                const rect = currObject.current.getBoundingClientRect();
+                setDimensions({ width: rect.width, height: rect.height });
+            }
+            }, 300); 
     };
     // Resource management logic
 
     const [resourceType, setResourceType] = useState("");
+    const [resourceName, setResourceName] = useState("");
     const [requiredFields, setRequiredFields] = useState([]);
 
     const handleResourceTypeChange = (e) => {
         setResourceType(e.target.value);
+        container['resource_type'] = e.target.value;
         for(let i=0; i<availableResources.length; i++){
             if(availableResources[i].resource_name == e.target.value){
                 setRequiredFields(availableResources[i].required_fields);
             }
         }
     };
+
+    const handleNameChange = (e) => {
+        setResourceName(e.target.value);
+        container['resource_name'] = e.target.value;
+    }
+
+
+    // User input management
+    const [fieldValues, setFieldValues] = useState({});
+
+    const handleFieldChange = (e, label) => {
+        setFieldValues({
+            ...fieldValues,
+            [label]: e.target.value
+        });
+        container['config'] = fieldValues;
+    };
+  
 
     return (
         <div
@@ -144,10 +164,29 @@ const DraggableContainer = ({ deleteFunc, availableResources, containerRef }) =>
             <AccordionDetails className="bg-gray-300">
             <div className="flex flex-col">
                 <ListResources resourceType={resourceType} setResourceFunc={handleResourceTypeChange} availableResources={availableResources} />
-                {resourceType !== "New Resource" && (
+                {resourceType !== "New Resource" && resourceType !== "" && (
                     <>
+                        <TextField
+                            size="small"
+                            className="my-1"
+                            key={-1}
+                            label={"Resource Name"}
+                            value={resourceName || ""}
+                            onChange={(e) => handleNameChange(e)}
+                            onClick={()=> {console.log(container)}}
+                        />
                         {requiredFields.map((label, idx) => {
-                            return <TextField size="small" className="my-1" key={idx} label={label}></TextField>
+                            return (
+                                <TextField
+                                    size="small"
+                                    className="my-1"
+                                    key={idx}
+                                    label={label}
+                                    value={fieldValues[label] || ""}
+                                    onChange={(e) => handleFieldChange(e, label)}
+                                    onClick={()=> {console.log(container)}}
+                                />
+                            );
                         })}
                     </>
                     )}
